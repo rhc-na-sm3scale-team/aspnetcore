@@ -70,19 +70,19 @@ commands:
       - type: exec
         component: dotnet
         command: dotnet restore
-        workdir: '${CHE_PROJECTS_ROOT}/dotnet-web-simple'
+        workdir: '${CHE_PROJECTS_ROOT}/aspnetcore'
   - name: 2. Build
     actions:
       - type: exec
         component: dotnet
         command: dotnet build
-        workdir: '${CHE_PROJECTS_ROOT}/dotnet-web-simple'
+        workdir: '${CHE_PROJECTS_ROOT}/aspnetcore'
   - name: 3. Run
     actions:
       - type: exec
         component: dotnet
         command: dotnet run
-        workdir: '${CHE_PROJECTS_ROOT}/dotnet-web-simple'
+        workdir: '${CHE_PROJECTS_ROOT}/aspnetcore'
   - name: Launch .net web application in debug mode
     actions:
       - type: vscode-launch
