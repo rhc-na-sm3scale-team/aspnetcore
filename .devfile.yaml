@@ -1,0 +1,105 @@
+apiVersion: 1.0.0
+metadata:
+  name: api
+projects:
+  - name: api
+    source:
+      location: https://github.com/rhc-na-sm3scale-team/aspnetcore.git
+      type: git
+components:
+  - type: chePlugin
+    alias: omnisharp
+    id: redhat-developer/che-omnisharp-plugin/latest
+  - type: chePlugin
+    alias: netcoredbg
+    id: redhat-developer/netcoredbg-theia-plugin/latest
+  - type: dockerimage
+    alias: dotnet
+    image: 'registry.redhat.io/codeready-workspaces/stacks-dotnet-rhel8@sha256:68875b794b80d9590fceff2e35eaa8f0ac47cd9e8f183f54652a1d1703024dd8'
+    memoryLimit: 512Mi
+    endpoints:
+      - name: hello-endpoint
+        port: 5000
+    mountSources: true
+    volumes:
+      - name: nuget
+        containerPath: /home/jboss/.nuget
+  - id: sonarsource/sonarlint-vscode/latest
+    type: chePlugin
+    preferences:
+      sonarlint.connectedMode.connections.sonarcloud: >
+        [{
+          "connectionId": "sonarcloud",
+          "organizationKey": "infosec812-github",
+          "token": "07c55d49dcae384ad64611a7529102b656d4118c"
+        }]
+      sonarlint.connectedMode.project: >
+        {
+          "projectKey": "vertx-openapi-jooq-multimodule",
+          "connectionId": "sonarcloud"
+        }
+  - id: ms-kubernetes-tools/vscode-kubernetes-tools/latest
+    type: chePlugin
+  - id: redhat/vscode-openshift-connector/latest
+    type: chePlugin
+  - id: redhat/vscode-xml/latest
+    type: chePlugin
+  - id: redhat/vscode-yaml/latest
+    type: chePlugin
+  - id: redhat/dependency-analytics/latest
+    type: chePlugin
+  - mountSources: true
+    command:
+      - sleep
+      - infinity
+    memoryLimit: 256Mi
+    type: dockerimage
+    alias: openapi
+    image: 'docker.io/openapitools/openapi-generator-cli:latest'
+  - mountSources: true
+    command:
+      - sleep
+      - infinity
+    memoryLimit: 128Mi
+    type: dockerimage
+    alias: 3scale
+    image: 'registry.redhat.io/3scale-amp2/toolbox-rhel7:1.5.0'
+commands:
+  - name: 1. Update dependencies
+    actions:
+      - type: exec
+        component: dotnet
+        command: dotnet restore
+        workdir: '${CHE_PROJECTS_ROOT}/dotnet-web-simple'
+  - name: 2. Build
+    actions:
+      - type: exec
+        component: dotnet
+        command: dotnet build
+        workdir: '${CHE_PROJECTS_ROOT}/dotnet-web-simple'
+  - name: 3. Run
+    actions:
+      - type: exec
+        component: dotnet
+        command: dotnet run
+        workdir: '${CHE_PROJECTS_ROOT}/dotnet-web-simple'
+  - name: Launch .net web application in debug mode
+    actions:
+      - type: vscode-launch
+        referenceContent: |
+          {
+            "version": "0.2.0",
+              "configurations": [
+                 {
+                    "type": "netcoredbg",
+                    "request": "launch",
+                    "program": "/projects/dotnet-web-simple/bin/Debug/netcoreapp3.1/web.dll",
+                    "args": [],
+                    "name": ".NET Core Launch (console)",
+                    "stopAtEntry": true,
+                    "preLaunchTask": "2. Build",
+                    "console": "internalConsole"
+                  }
+              ]
+          }
+
